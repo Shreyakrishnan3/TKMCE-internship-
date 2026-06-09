@@ -1,4 +1,4 @@
-# Digital Design Portfolio — TKMCE Summer Internship 2026
+#  Portfolio — TKMCE Summer Internship 2026
 
 ## Overview
 This repository serves as a structured archive of Verilog HDL hardware designs, verification testbenches, and simulation results compiled during the 15-day industrial internship program hosted by TKM College of Engineering.
