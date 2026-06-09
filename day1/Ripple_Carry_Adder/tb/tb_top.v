@@ -25,7 +25,6 @@ reg cin_tb;
 wire [3:0] S_tb;
 wire cout_tb;
 
-// Device Under Test (DUT) Instantiation
 RCA dut(A_tb, B_tb, cin_tb, S_tb, cout_tb);
 
 initial begin 
@@ -51,6 +50,8 @@ initial begin
  A_tb = 4'd15;
  B_tb = 4'd15;
  cin_tb = 1'b1;
+#1;
+ $finish;
 end
 
 initial begin 
@@ -59,3 +60,4 @@ initial begin
 end
 
 endmodule
+
