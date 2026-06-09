@@ -23,7 +23,7 @@
 module sr_flipflop(input s,r,rst,clk,output reg q,qbar );
 always@(clk)begin
 if(clk)begin
-   if(rst)begin//rst is checked only if enb is high..synchronos reset
+   if(rst)begin//rst is checked only if enb is high..synchronous reset
    q<=1'b0;
    qbar<=1'b1;
    end
