@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module sr_latch_tb();
+module sr_flipflop_tb();
 reg s_tb,r_tb,rst_tb,clk_tb;
 wire q_tb,qbar_tb;
 sr_latch dut(s_tb,r_tb,rst_tb,clk_tb,q_tb,qbar_tb);
