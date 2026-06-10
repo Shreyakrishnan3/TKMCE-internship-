@@ -16,8 +16,8 @@ The module evaluates its inputs exclusively when the gate/clock interface signal
 ## 2. Structural RTL Schematic Mapping
 The hardware configuration was compiled using Xilinx Vivado to map the conditional assignments into technology-specific FPGA primitives.
 
-![SR Flip-Flop RTL Schematic Diagram](screenshot/sr_ff_schematic.png)
-*Figure 1: Gate-level structural interconnect schema (`sr_ff_schematic.png`)*
+![SR Flip-Flop RTL Schematic Diagram](screenshot/sr_ff_schematic.png.png)
+*Figure 1: Gate-level structural interconnect schema (`sr_ff_schematic.png.png`)*
 
 ### Design Implementation Details
 * **Non-Blocking Logic (`<=`)**: Used across all sequential assignment paths to enforce deterministic evaluation and prevent dangerous race conditions during behavioral simulation.
@@ -44,8 +44,8 @@ The verification file (`sr_flipflop_tb.v`) introduces an explicit 10ns clock cyc
 ### 📊 Behavioral Waveform Output
 The execution sequence matches the expected response patterns, verifying that data changes are securely locked out whenever the gate enable pulse falls low.
 
-![Gated SR Simulation Waveform](screenshot/sr_ff.png)
-*Figure 2: Timing graph showing Set, Reset, Hold, and Invalid operations (`sr_ff.png`)*
+![Gated SR Simulation Waveform](screenshot/sr_ff.png.png)
+*Figure 2: Timing graph showing Set, Reset, Hold, and Invalid operations (`sr_ff.png.png`)*
 
 ### Chronological Timing Evaluation
 1. **Interval 0-10ns (Reset Phase)**: `rst_tb` is held high. The module forces `q` down to `0` and `qbar` up to `1` on the active phase.
@@ -57,6 +57,10 @@ The execution sequence matches the expected response patterns, verifying that da
 ---
 
 ## 5. Synthesis Compilation Summary
+* **Tool Version**: Xilinx Vivado (v2023.2)
+* **Compilation Metrics**: 0 Errors, 0 Critical Warnings
+* **Hardware Safe Mode**: All combinational feedforward and feedback elements successfully map to LUT hardware cells, with structural default conditions keeping timing paths highly stable.
+
 * **Tool Version**: Xilinx Vivado (v2023.2)
 * **Compilation Metrics**: 0 Errors, 0 Critical Warnings
 * **Hardware Safe Mode**: All combinational feedforward and feedback elements successfully map to LUT hardware cells, with structural default conditions keeping timing paths highly stable.
