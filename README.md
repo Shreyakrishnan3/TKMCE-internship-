@@ -1,4 +1,4 @@
-#  Portfolio — TKMCE Summer Internship 2026
+# Portfolio — TKMCE Summer Internship 2026
 
 ## Overview
 This repository serves as a structured archive of Verilog HDL hardware designs, verification testbenches, and simulation results compiled during the 15-day industrial internship program hosted by TKM College of Engineering.
@@ -17,7 +17,7 @@ This repository serves as a structured archive of Verilog HDL hardware designs, 
 ### Core Details
 
 | Parameter | Description |
-
+| :--- | :--- |
 | **Program Title** | 15-Day Hardware Description Language Internship |
 | **Host Institution** | TKMCE Department of ECE |
 | **Commencement Date** | June 08, 2026 |
@@ -33,6 +33,10 @@ This repository serves as a structured archive of Verilog HDL hardware designs, 
 * **SR Flip-Flop Array:** Standard memory bistable cell simulation.
 * **D Flip-Flop Array:** Edge-triggered state element block processing.
 
+#### 📂 Day 3: Finite State Machines & RTL Synthesis
+* **Sequence Detector:** Synchronous finite state machine (FSM) pattern matcher architecture verified via behavioral simulation.
+* **Face Scan System:** RTL synthesis, timing optimization, and gate-level hardware mapping for biometric authentication control logic.
+
 ---
 
 ## Directory Infrastructure Layout
@@ -47,28 +51,35 @@ TKMCE-internship/
 │   └── BCD_Counter/
 │       ├── Design/
 │       └── Testbench/
-└── day2/
-    ├── decoder/
+├── day2/
+│   ├── decoder/
+│   │   ├── design/
+│   │   └── testbench/
+│   ├── usr/
+│   │   ├── design/
+│   │   └── testbench/
+│   ├── SR flipflop/
+│   │   ├── design/
+│   │   └── testbench/
+│   └── D flipflop/
+│       ├── design/
+│       └── testbench/
+└── day3/
+    ├── sequence_detector/
     │   ├── design/
     │   └── testbench/
-    ├── usr/
-    │   ├── design/
-    │   └── testbench/
-    ├── SR flipflop/
-    │   ├── design/
-    │   └── testbench/
-    └── D flipflop/
-        ├── design/
-        └── testbench/
+    └── facescansystem/
+        └── design/
 ```
 
 ---
 
 ## Core Toolchain & Competencies
 * **HDL Modeling:** Behavioral, Dataflow, and Structural Verilog descriptions.
+* **FSM Design:** Algorithmic State Machine mapping for control unit logic blocks.
+* **Logic Synthesis:** Translating register-transfer level (RTL) descriptions into gate-level netlists using Vivado Synthesis.
 * **EDA Simulation:** Vivado Behavioral Simulator waveform validation.
 * **Version Control:** Git repository structuring and branch workspace management.
 
 ---
 *This portfolio is actively curated to track academic laboratory progression, architectural code verification, and design metrics.*
-
