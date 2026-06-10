@@ -20,19 +20,29 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
+
+
 module D_flipflop_tb();
 reg d_tb,clk_tb;
 wire q_tb;
 integer m;
 D_flipflop dut(d_tb,clk_tb,q_tb);
+
 initial begin
 {d_tb,clk_tb}=0;
 end
+
 initial begin
 $monitor("The value of q_tb is %b",q_tb);
 for(m=0;m<4;m=m+1)begin
-#1;
-{d_tb,clk_tb}=m;
+   #1;
+   clk_tb = 0;      
+   d_tb = m[0];     
+   #1;              
+   clk_tb = 1;      
 end
+#2;
+$finish;            
 end
 endmodule
+
