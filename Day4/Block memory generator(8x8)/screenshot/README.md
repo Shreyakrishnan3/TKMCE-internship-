@@ -1,4 +1,4 @@
-# Day 3: Synchronous 8x8 Block Memory Generator
+# Day 4: Synchronous 8x8 Block Memory Generator
 
 ## 1. System Overview
 This project implements a highly optimized **Synchronous 8x8 Block Memory Generator** module. The module acts as an internal hardware storage matrix containing 8 deep memory locations, where each slot is capable of storing an 8-bit wide data word ($8 \times 8 = 64\text{ bits}$ of total memory capacity).
