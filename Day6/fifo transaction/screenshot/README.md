@@ -47,8 +47,31 @@ Extends `fifo_base_transaction`.
 
 ---
 
-## Simulation Results
+## Simulation Console Output
 
-Console output saved in `fifo_trans_console`.
+![FIFO Transaction Console Output](fifo_trans_console.png)
 
-### Write Transaction
+---
+
+## Transaction Summary
+
+| Transaction | wrenb | rdenb | rst | data_in | data_out |
+|---|---|---|---|---|---|
+| Write | 1 | 0 | 0 | 171 (0xAB) | 0 |
+| Read | 0 | 1 | 0 | 0 | 171 (0xAB) |
+| Reset | 0 | 0 | 1 | 0 | 0 |
+| Randomized | 0 | 0 | 0 | 41 | 0 |
+
+---
+
+## Constraint Validation
+
+| Scenario | Expected | Result |
+|---|---|---|
+| `wrenb` and `rdenb` both 1 | Blocked by `valid_ctrl` | ✅ Never occurred |
+| `rst=1` with `wrenb` or `rdenb` active | Blocked by `valid_rst` | ✅ Never occurred |
+
+---
+
+## Tool
+Xilinx Vivado Simulator (xsim)
