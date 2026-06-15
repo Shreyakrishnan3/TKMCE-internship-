@@ -1,3 +1,24 @@
+# FIFO Transaction Class — SystemVerilog OOP
+
+## Overview
+A two-level class hierarchy modelling transactions for an 8-bit, 8-deep FIFO design.
+Built using SystemVerilog OOP concepts — inheritance, constructors, super keyword, and constraints.
+
+---
+
+## Files
+| File | Description |
+|---|---|
+| `fifo_transaction.sv` | Base and extended transaction class |
+| `fifo_trans_console.png` | TCL console output screenshot from simulation |
+
+---
+
+## Class Hierarchy
+
+    fifo_base_transaction
+    └── fifo_transaction
+
 ---
 
 ## fifo_base_transaction
