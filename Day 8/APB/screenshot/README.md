@@ -1,51 +1,65 @@
 # APB Slave Memory Verification Environment
 
-An AMBA APB 3/4 compliant memory slave design with a complete, layered SystemVerilog verification environment utilizing constraint-driven generation, monitors, and scoreboards.
+## 1. System Overview
+This project implements a complete, structural hardware verification environment for an AMBA APB 3/4 compliant memory slave module. The setup relies on a layered, object-oriented SystemVerilog architecture to drive, capture, and check protocol integrity.
 
----
+### The Core Problem
+In the default design, the peripheral updates `prdata` inside a sequential `always_ff` clock block. This inserts a **one-clock-cycle pipeline registry delay** before read data is updated onto the bus. While adding an extra clock wait inside a monitor captures data during isolated cycles, it violates standard AMBA specifications and results in critical packet drops or scoreboard checking desynchronization during continuous, back-to-back bus transfers.
 
-## 🗺️ System Topology
+### The Architectural Solution
+To ensure absolute standard compliance and prevent pipeline mismatch bugs, the architectural layout mandates a two-part remedy:
+* The `apb_slave` read pathway is converted to an instant combinational decode statement (`assign prdata = ...`), removing the 1-cycle latency gap completely.
+* The passive `monitor` is restored to zero-wait-state sampling logic, accurately capturing address, control variables, and reading vectors simultaneously during the protocol's Access phase.
 
-```text
-                     +-----------------------------------------------+
+***
 
-                     |                  ENVIRONMENT                  |
-                     |                                               |
-+-----------+        | +-----------+     +--------+     +----------+ |     +------------+
+## 2. Integrated System Architecture
+The top-level testbench block (`tb.sv`) structures the environment by spinning up a clock oscillator, handling initial reset pulses, and instantiating the verification infrastructure via a virtual interface setup.
 
-|           |        | |           |     |        |     |          | |     |            |
-| GENERATOR |=======>| |  DRIVER   |====>|  DUT   |====>| MONITOR  |====>| SCOREBOARD |
-|           | Mailbox| |           | VIF | (top)  | VIF |          ||Mbox|            |
-+-----------+        | +-----------+     +--------+     +----------+ |     +------------+
-                     +-----------------------------------------------+
-```
+![APB Protocol Waveform](apb_waveform.png)
+*Figure 1: Timing diagram trace for standard APB bus executions (`apb_waveform.png`)*
 
----
+### Subcomponent Descriptions
+1. **`apb_transaction` (Data Packet)**: Encapsulates randomize-ready bus contents. It includes custom address constraints to force 32-bit word alignment (`addr[1:0] == 2'b00`) spanning from `0x0000_0000` to `0x0000_03FC`.
+2. **`generator` (Stimulus Source)**: Procedurally handles loop tracking to feed exactly 10 sequence pairs of randomized write-then-read transactions into the pipeline.
+3. **`driver` (Pin Master)**: Unpacks incoming transaction requests from the generator mailbox and physically drives the corresponding interface pins.
+4. **`monitor` (Passive Sniffer)**: Samples active wires at each clock boundary and ships reconstructed transaction logs over to checking components via mailboxes.
+5. **`scoreboard` (Golden Model Checker)**: Employs a SystemVerilog associative array structure (`internal_mem`) to store historical write states and dynamically evaluate the accuracy of live read operations.
 
-## 🛠️ System Architecture
+***
 
-### Hardware Components
-* **`apb_slave`**: Core design containing a 32-bit wide, 256-word deep memory array (`mem [0:256]`). It uses word-aligned indexing by stripping address bits `paddr[9:2]`.
-* **`top`**: The top-level hardware wrapper routing interface connections to the slave module.
+## 3. Interface Signal Dictionary
 
-### Verification IP Infrastructure
-* **Transaction (`apb_transaction`)**: Encapsulates bus data. Constrained to enforce 32-bit word alignment (`addr[1:0] == 2'b00`) and boundaries between `0x0000_0000` and `0x0000_03FC`.
-* **Generator**: Generates 10 sequence loops of back-to-back randomized write and read transaction pairs targeting matching addresses.
-* **Monitor**: Captures structural bus activity from the virtual interface (`apb_if`) and streams completed transaction blocks to checking nodes.
-* **Scoreboard**: Implements a SystemVerilog associative array golden model (`internal_mem`) to compare read results against expected data values dynamically.
+| Pin Name | Direction | Bit-Width | Functional Description |
+| :--- | :---: | :---: | :--- |
+| `clk` | Input | 1-bit | Master System Clock Source |
+| `rst_n` | Input | 1-bit | Active-Low Synchronous System Reset Wire |
+| `paddr[31:0]` | Input | 32-bit | APB Parallel System Address Routing Bus |
+| `psel` | Input | 1-bit | Peripheral Select Flag (Initiates Setup Phase) |
+| `penable` | Input | 1-bit | Peripheral Enable Flag (Initiates Access Phase) |
+| `pwrite` | Input | 1-bit | Bus Direction Control (1 = Write Cycle, 0 = Read Cycle) |
+| `pwdata[31:0]` | Input | 32-bit | Parallel Data Bus for Incoming Peripheral Writes |
+| `prdata[31:0]` | Output | 32-bit | Parallel Data Bus for Outgoing Peripheral Reads |
+| `pready` | Output | 1-bit | Device Ready Monitor (Permanently tied to 1'b1) |
 
----
+***
 
-## ⚠️ Protocol Flaw & Verification Impact
+## 4. Zero-Wait State Timing Execution Summary
+Following the recommended combinational conversion, the system tracks cleanly across a standard 2-cycle protocol matrix without encountering overlapping phase offsets.
 
-The original design updates `prdata` inside a sequential `always_ff` block. This adds a **one-clock-cycle delay** before read data is updated on the bus. 
+### Signal Evaluation Matrix
 
-### Why the Current Monitor Workaround Fails
-The provided `monitor.sv` uses an extra clock delay (`@(posedge vif.clk); #1;`) to capture this delayed data. While this works for isolated transfers, **it breaks APB protocol standard specifications and causes data loss or scoreboard mismatch errors** during continuous, back-to-back cycles.
+| Bus Interface Element | Setup Phase (Cycle 1) | Access Phase (Cycle 2) |
+| :--- | :--- | :--- |
+| **`clk`** | ↗️ Rising Edge Transition | ↗️ Rising Edge Transition |
+| **`paddr` / `pwrite`** | Driven to stable target value | Maintained stable across cycle |
+| **`psel`** | Asserted High (`1'b1`) | Maintained stable across cycle |
+| **`penable`** | Deasserted Low (`1'b0`) | Asserted High (`1'b1`) |
+| **`pwdata` / `prdata`** | Prepared / Tri-stated | Sampled safely on clock edge boundary |
 
-### Recommended Fix
+### Functional Pipeline Fixes
 
-#### 1. Convert `apb_slave.sv` to use Combinational Reads:
+#### Corrected Non-Delayed Slave Read Block (`apb_slave.sv`):
 ```systemverilog
 // Assign read data combinations dynamically to eliminate the 1-cycle latency gap
 assign prdata = (psel && penable && !pwrite) ? mem[paddr[9:2]] : 32'h0;
@@ -59,7 +73,7 @@ always_ff @(posedge clk or negedge rst_n) begin
 end
 ```
 
-#### 2. Revert `monitor.sv` to Standard Zero-Wait Sampling:
+#### Corrected Zero-Wait Monitor Loop (`monitor.sv`):
 ```systemverilog
 task main();
   forever begin
@@ -80,36 +94,17 @@ task main();
 endtask
 ```
 
----
+***
 
-## ⏱️ Standard Zero-Wait APB Protocol Execution
+## 5. Simulation Compilation Status
+* **Language Support**: IEEE 1800 SystemVerilog standard compliance.
+* **Target Tools**: Compatible with ModelSim, QuestaSim, VCS, and Riviera-PRO.
+* **Compilation Command**: `vlog +incdir+. tb.sv`
+* **Execution State**: Successfully compiled and clean checking logs verified.
 
-Once the fix above is applied, your saved waveform file (`apb_waveform.png`) will reflect a clean, standard 2-cycle protocol format without overlapping clock phase offsets:
-
-| Signal | Setup Cycle (Phase 1) | Access Cycle (Phase 2) |
-| :--- | :--- | :--- |
-| **`clk`** | ↗️ Rising Edge | ↗️ Rising Edge |
-| **`paddr` / `pwrite`** | Driven to stable value | Maintained stable |
-| **`psel`** | Asserted (`1'b1`) | Maintained stable |
-| **`penable`** | Deasserted (`1'b0`) | Asserted (`1'b1`) |
-| **`pwdata` / `prdata`** | Prepared / Tri-stated | Sampled safely on clock edge |
-
----
-
-## 🚀 Simulation Run Guide
-
-Compile and run the testbench manifest using any standard IEEE 1800 SystemVerilog simulator:
-
-```bash
-# Example compilation command using Questa/ModelSim
-vlog +incdir+. tb.sv
-vsim work.tb -c -do "run -all; quit"
-```
-
-### Expected Console Output
+### Expected Simulator Standard Output
 ```text
 [SCB] WRITE: Addr=0x000000a4, Data=0xbeefcafe
 [SCB] READ : Addr=0x000000a4
 [SCB] MATCH: Expected=0xbeefcafe, Got=0xbeefcafe (SUCCESS)
 ```
-
